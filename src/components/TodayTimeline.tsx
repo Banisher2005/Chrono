@@ -16,7 +16,15 @@ export default function TodayTimeline() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
 
-  const selectedDateObj = new Date((state.selectedDate || new Date().toISOString().split('T')[0]) + 'T00:00:00');
+  const selectedDateObj = useMemo(() => {
+    try {
+      const d = new Date((state.selectedDate || new Date().toISOString().split('T')[0]) + 'T00:00:00');
+      if (isNaN(d.getTime())) return new Date();
+      return d;
+    } catch {
+      return new Date();
+    }
+  }, [state.selectedDate]);
   const isToday = state.selectedDate === formatDate(new Date());
 
   const dayTasks = useMemo(

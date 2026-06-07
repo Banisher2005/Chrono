@@ -12,7 +12,17 @@ import TaskCard from '@/components/TaskCard';
 
 export default function CalendarPage() {
   const { state, addTask, updateTask, toggleTask, deleteTask, setSelectedDate } = useStore();
-  const [currentMonth, setCurrentMonth] = useState(new Date((state.selectedDate || new Date().toISOString().split('T')[0]) + 'T00:00:00'));
+  const selectedDateObj = useMemo(() => {
+    try {
+      const d = new Date((state.selectedDate || new Date().toISOString().split('T')[0]) + 'T00:00:00');
+      if (isNaN(d.getTime())) return new Date();
+      return d;
+    } catch {
+      return new Date();
+    }
+  }, [state.selectedDate]);
+
+  const [currentMonth, setCurrentMonth] = useState(selectedDateObj);
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
@@ -141,10 +151,10 @@ export default function CalendarPage() {
         <div className="flex items-center justify-between px-5 py-4 border-b border-chrono-border/30">
           <div>
             <p className="text-sm font-semibold text-chrono-text">
-              {format(new Date(state.selectedDate + 'T00:00:00'), 'EEEE')}
+              {format(selectedDateObj, 'EEEE')}
             </p>
             <p className="text-xs text-chrono-text-muted">
-              {format(new Date(state.selectedDate + 'T00:00:00'), 'MMMM d, yyyy')}
+              {format(selectedDateObj, 'MMMM d, yyyy')}
             </p>
           </div>
           <button
