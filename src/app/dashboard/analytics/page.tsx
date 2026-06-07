@@ -101,7 +101,7 @@ export default function AnalyticsPage() {
                 <p className="text-[10px] text-chrono-text-muted uppercase">Completed</p>
               </div>
               <div className="text-center">
-                <p className="text-lg font-bold text-chrono-text">{state.tasks.filter(t => t.date === today && t.status === 'pending').length}</p>
+                <p className="text-lg font-bold text-chrono-text">{state.tasks.filter(t => t.date === today && t.status !== 'completed').length}</p>
                 <p className="text-[10px] text-chrono-text-muted uppercase">Remaining</p>
               </div>
             </div>

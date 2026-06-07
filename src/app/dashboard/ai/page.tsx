@@ -16,117 +16,12 @@ interface Message {
   applied?: boolean;
 }
 
-// ─── Rule-based AI Scheduler ────────────────────────────────────
+import { saveAIMessage } from '@/lib/api/ai-history';
 
-function generateSchedule(prompt: string): Message['tasks'] {
-  const lower = prompt.toLowerCase();
-  const today = new Date();
-
-  // Detect deadline
-  let deadline = 5; // default 5 days
-  if (lower.includes('tomorrow')) deadline = 1;
-  else if (lower.includes('two days') || lower.includes('2 days')) deadline = 2;
-  else if (lower.includes('three days') || lower.includes('3 days')) deadline = 3;
-  else if (lower.match(/by (monday|tuesday|wednesday|thursday|friday|saturday|sunday)/)) {
-    const dayMap: Record<string, number> = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
-    const match = lower.match(/by (monday|tuesday|wednesday|thursday|friday|saturday|sunday)/);
-    if (match) {
-      const targetDay = dayMap[match[1]];
-      const currentDay = today.getDay();
-      deadline = (targetDay - currentDay + 7) % 7 || 7;
-    }
-  }
-  else if (lower.includes('this week')) deadline = Math.max(5 - today.getDay(), 1);
-
-  // Detect project type and generate appropriate subtasks
-  let subtasks: Array<{ title: string; priority: Priority; description: string }> = [];
-
-  if (lower.includes('machine learning') || lower.includes('ml') || lower.includes('ai project')) {
-    subtasks = [
-      { title: 'Research & Literature Review', priority: 'medium', description: 'Review relevant papers and existing approaches' },
-      { title: 'Dataset Collection & Preprocessing', priority: 'high', description: 'Gather, clean, and prepare the dataset' },
-      { title: 'Model Architecture Design', priority: 'critical', description: 'Design and implement the model architecture' },
-      { title: 'Training & Hyperparameter Tuning', priority: 'critical', description: 'Train the model and optimize hyperparameters' },
-      { title: 'Evaluation & Testing', priority: 'high', description: 'Evaluate model performance on test set' },
-      { title: 'Documentation & Report', priority: 'medium', description: 'Write project documentation and final report' },
-      { title: 'Final Review & Submission', priority: 'critical', description: 'Final review, cleanup, and submission' },
-    ];
-  } else if (lower.includes('presentation') || lower.includes('slides') || lower.includes('pitch')) {
-    subtasks = [
-      { title: 'Outline & Key Points', priority: 'high', description: 'Define main topics and key messages' },
-      { title: 'Content Research', priority: 'medium', description: 'Gather data, stats, and supporting material' },
-      { title: 'Slide Design & Creation', priority: 'high', description: 'Design slides with visuals and content' },
-      { title: 'Speaker Notes & Script', priority: 'medium', description: 'Write talking points for each slide' },
-      { title: 'Practice Run & Refinement', priority: 'critical', description: 'Rehearse and refine the presentation' },
-    ];
-  } else if (lower.includes('website') || lower.includes('web app') || lower.includes('frontend')) {
-    subtasks = [
-      { title: 'Requirements & Wireframes', priority: 'high', description: 'Define requirements and create wireframes' },
-      { title: 'Design System Setup', priority: 'medium', description: 'Set up colors, typography, and components' },
-      { title: 'Core Pages Development', priority: 'critical', description: 'Build the main pages and navigation' },
-      { title: 'Interactive Features', priority: 'high', description: 'Implement forms, animations, and interactions' },
-      { title: 'Testing & Responsive Design', priority: 'high', description: 'Test across devices and fix issues' },
-      { title: 'Deployment & Launch', priority: 'critical', description: 'Deploy to production and verify' },
-    ];
-  } else if (lower.includes('exam') || lower.includes('study') || lower.includes('test')) {
-    subtasks = [
-      { title: 'Review Syllabus & Topics', priority: 'medium', description: 'Identify all topics to cover' },
-      { title: 'Study Core Concepts', priority: 'critical', description: 'Deep dive into fundamental concepts' },
-      { title: 'Practice Problems', priority: 'high', description: 'Solve practice problems and past papers' },
-      { title: 'Weak Areas Review', priority: 'critical', description: 'Focus on difficult topics' },
-      { title: 'Mock Test & Final Review', priority: 'high', description: 'Take mock test and review mistakes' },
-    ];
-  } else {
-    // Generic project breakdown
-    subtasks = [
-      { title: 'Research & Planning', priority: 'medium', description: 'Research the topic and create a plan' },
-      { title: 'Core Work - Phase 1', priority: 'high', description: 'Start on the main deliverables' },
-      { title: 'Core Work - Phase 2', priority: 'critical', description: 'Continue building on Phase 1' },
-      { title: 'Review & Refinement', priority: 'high', description: 'Review work and make improvements' },
-      { title: 'Final Delivery', priority: 'critical', description: 'Final touches and delivery' },
-    ];
-  }
-
-  // Distribute tasks across available days
-  const tasksPerDay = Math.ceil(subtasks.length / deadline);
-  const result: Message['tasks'] = [];
-
-  subtasks.forEach((task, i) => {
-    const dayOffset = Math.min(Math.floor(i / tasksPerDay), deadline - 1);
-    const date = formatDate(addDays(today, dayOffset + 1));
-    const startHour = 9 + (i % tasksPerDay) * 2;
-
-    result.push({
-      ...task,
-      date,
-      startTime: `${startHour.toString().padStart(2, '0')}:00`,
-      endTime: `${(startHour + 2).toString().padStart(2, '0')}:00`,
-    });
-  });
-
-  return result;
-}
-
-function generateAIResponse(prompt: string): string {
-  const lower = prompt.toLowerCase();
-
-  if (lower.includes('machine learning') || lower.includes('ml')) {
-    return "I've analyzed your machine learning project and created an optimized schedule. I've distributed the work to ensure the most complex tasks (model training & architecture) happen mid-week when you'll have maximum focus. Let me know if you'd like to adjust any timelines!";
-  }
-  if (lower.includes('presentation') || lower.includes('slides')) {
-    return "I've broken down your presentation into manageable phases. Starting with research and outlining, building through design, and ending with practice runs. This ensures you're not rushing the rehearsal!";
-  }
-  if (lower.includes('website') || lower.includes('web app')) {
-    return "I've created a development schedule following best practices. We start with planning, move through implementation, and end with testing and deployment. Each phase builds on the previous one.";
-  }
-  if (lower.includes('exam') || lower.includes('study')) {
-    return "I've designed a study schedule that starts with broad review and progressively narrows focus. The final day includes a mock test to build confidence. Spaced repetition is built into the plan!";
-  }
-  return "I've broken your project into manageable phases spread across the available time. Critical tasks are front-loaded to reduce deadline pressure. Want me to adjust the priority or timeline of any task?";
-}
+// ─── AI Scheduler ────────────────────────────────────
 
 export default function AISchedulerPage() {
-  const { addTask } = useStore();
+  const { state, addTask } = useStore();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -151,22 +46,46 @@ export default function AISchedulerPage() {
     setInput('');
     setIsTyping(true);
 
-    // Simulate AI thinking
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: userMsg.content,
+          existingTasks: state.tasks,
+          userTimezone: timezone,
+        })
+      });
 
-    const tasks = generateSchedule(userMsg.content);
-    const responseText = generateAIResponse(userMsg.content);
+      if (!res.ok) throw new Error('AI request failed');
 
-    const aiMsg: Message = {
-      id: (Date.now() + 1).toString(),
-      role: 'ai',
-      content: responseText,
-      tasks,
-      applied: false,
-    };
+      const data = await res.json();
+      
+      const aiMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'ai',
+        content: data.message,
+        tasks: data.tasks,
+        applied: false,
+      };
 
-    setMessages(prev => [...prev, aiMsg]);
-    setIsTyping(false);
+      setMessages(prev => [...prev, aiMsg]);
+
+      // Save to history in background if user is logged in
+      if (state.isAuthenticated && state.user) {
+        saveAIMessage(state.user.id, userMsg.content, JSON.stringify(data)).catch(console.error);
+      }
+    } catch (err) {
+      console.error(err);
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: 'ai',
+        content: "I'm sorry, I'm having trouble connecting to my neural network. Please make sure your Gemini API key is configured correctly in `.env.local`.",
+      }]);
+    } finally {
+      setIsTyping(false);
+    }
   }
 
   function handleApply(msgId: string) {
@@ -183,7 +102,7 @@ export default function AISchedulerPage() {
         priority: task.priority,
         category: 'Work',
         source: 'chrono',
-        status: 'pending',
+        status: 'todo',
       });
     });
 

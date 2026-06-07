@@ -16,12 +16,12 @@ import {
 } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/calendar', icon: Calendar, label: 'Calendar' },
-  { href: '/grid', icon: Grid3X3, label: 'Chrono Grid' },
-  { href: '/ai', icon: Sparkles, label: 'Chrono AI' },
-  { href: '/analytics', icon: BarChart3, label: 'Analytics' },
-  { href: '/settings', icon: Settings, label: 'Settings' },
+  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/dashboard/calendar', icon: Calendar, label: 'Calendar' },
+  { href: '/dashboard/grid', icon: Grid3X3, label: 'Chrono Grid' },
+  { href: '/dashboard/ai', icon: Sparkles, label: 'Chrono AI' },
+  { href: '/dashboard/analytics', icon: BarChart3, label: 'Analytics' },
+  { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
 ];
 
 export default function Sidebar() {

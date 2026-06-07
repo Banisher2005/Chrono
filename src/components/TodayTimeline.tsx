@@ -80,7 +80,7 @@ export default function TodayTimeline() {
           </div>
           <div className="h-3 w-px bg-chrono-border" />
           <div className="text-xs text-chrono-text-muted">
-            {todayTasks.filter(t => t.status === 'pending').length} remaining
+            {todayTasks.filter(t => t.status !== 'completed').length} remaining
           </div>
         </div>
       </div>

@@ -2,8 +2,10 @@
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Task, ChronoState, Priority, TaskSource, TaskStatus } from './types';
+import { Task, ChronoState, Priority, TaskSource, TaskStatus, UserProfile } from './types';
 import { formatDate } from './utils';
+import { createClient } from './supabase/client';
+import * as tasksApi from './api/tasks';
 
 // ─── Sample Data ────────────────────────────────────────────────
 
@@ -14,47 +16,37 @@ function generateSampleTasks(): Task[] {
   const dayAfter = formatDate(new Date(Date.now() + 2 * 86400000));
   const threeDays = formatDate(new Date(Date.now() + 3 * 86400000));
 
-  // Generate some past completed tasks for streak/analytics
   const pastTasks: Task[] = [];
   for (let i = 1; i <= 14; i++) {
     const d = formatDate(new Date(Date.now() - i * 86400000));
     pastTasks.push({
       id: uuidv4(), title: `Past Task ${i}`, description: '', date: d,
       startTime: '09:00', endTime: '10:00', priority: (['low', 'medium', 'high', 'critical'] as Priority[])[i % 4],
-      category: 'Work', status: 'completed', source: 'chrono', createdAt: d, completedAt: d, order: 0,
+      category: 'work', status: 'completed', source: 'chrono', createdAt: d, completedAt: d, order: 0,
     });
     if (i % 3 === 0) {
       pastTasks.push({
         id: uuidv4(), title: `Meeting ${i}`, description: '', date: d,
         startTime: '14:00', endTime: '15:00', priority: 'medium',
-        category: 'Meeting', status: 'completed', source: 'teams', createdAt: d, completedAt: d, order: 1,
+        category: 'work', status: 'completed', source: 'teams', createdAt: d, completedAt: d, order: 1,
       });
     }
   }
 
   return [
     ...pastTasks,
-    // Yesterday
-    { id: uuidv4(), title: 'Review sprint backlog', description: 'Go through all pending items', date: yesterday, startTime: '09:00', endTime: '10:00', priority: 'high', category: 'Work', status: 'completed', source: 'chrono', createdAt: yesterday, completedAt: yesterday, order: 0 },
-    { id: uuidv4(), title: 'Team standup', description: 'Daily sync with engineering', date: yesterday, startTime: '10:30', endTime: '11:00', priority: 'medium', category: 'Meeting', status: 'completed', source: 'teams', createdAt: yesterday, completedAt: yesterday, order: 1 },
-
-    // Today
-    { id: uuidv4(), title: 'AI Project Submission', description: 'Final review and submit the ML pipeline project', date: today, startTime: '10:00', endTime: '12:00', priority: 'critical', category: 'Work', status: 'pending', source: 'chrono', createdAt: today, order: 0 },
-    { id: uuidv4(), title: 'Design Review Meeting', description: 'Review new dashboard mockups with the team', date: today, startTime: '13:00', endTime: '14:00', priority: 'high', category: 'Meeting', status: 'pending', source: 'teams', createdAt: today, order: 1 },
-    { id: uuidv4(), title: 'Code Review: Auth Module', description: 'Review PR #247 for the authentication refactor', date: today, startTime: '14:30', endTime: '15:30', priority: 'high', category: 'Work', status: 'pending', source: 'chrono', createdAt: today, order: 2 },
-    { id: uuidv4(), title: 'Workout', description: 'Evening run + strength training', date: today, startTime: '18:00', endTime: '19:00', priority: 'medium', category: 'Health', status: 'pending', source: 'chrono', createdAt: today, order: 3 },
-    { id: uuidv4(), title: 'Read research papers', description: 'Transformer architecture papers', date: today, startTime: '20:00', endTime: '21:00', priority: 'low', category: 'Learning', status: 'pending', source: 'chrono', createdAt: today, order: 4 },
-
-    // Tomorrow
-    { id: uuidv4(), title: 'Client presentation prep', description: 'Prepare slides for Q2 review', date: tomorrow, startTime: '09:00', endTime: '11:00', priority: 'critical', category: 'Work', status: 'pending', source: 'chrono', createdAt: today, order: 0 },
-    { id: uuidv4(), title: 'Dentist appointment', description: 'Regular checkup', date: tomorrow, startTime: '15:00', endTime: '16:00', priority: 'medium', category: 'Personal', status: 'pending', source: 'google', createdAt: today, order: 1 },
-
-    // Day after
-    { id: uuidv4(), title: 'Sprint planning', description: 'Plan next sprint tasks and priorities', date: dayAfter, startTime: '10:00', endTime: '12:00', priority: 'high', category: 'Meeting', status: 'pending', source: 'teams', createdAt: today, order: 0 },
-    { id: uuidv4(), title: 'Database migration', description: 'Run migration scripts for v2 schema', date: dayAfter, startTime: '14:00', endTime: '16:00', priority: 'critical', category: 'Work', status: 'pending', source: 'chrono', createdAt: today, order: 1 },
-
-    // Three days out
-    { id: uuidv4(), title: 'Team lunch', description: 'Monthly team building lunch', date: threeDays, startTime: '12:00', endTime: '13:30', priority: 'low', category: 'Personal', status: 'pending', source: 'google', createdAt: today, order: 0 },
+    { id: uuidv4(), title: 'Review sprint backlog', description: 'Go through all pending items', date: yesterday, startTime: '09:00', endTime: '10:00', priority: 'high', category: 'work', status: 'completed', source: 'chrono', createdAt: yesterday, completedAt: yesterday, order: 0 },
+    { id: uuidv4(), title: 'Team standup', description: 'Daily sync with engineering', date: yesterday, startTime: '10:30', endTime: '11:00', priority: 'medium', category: 'work', status: 'completed', source: 'teams', createdAt: yesterday, completedAt: yesterday, order: 1 },
+    { id: uuidv4(), title: 'AI Project Submission', description: 'Final review and submit the ML pipeline project', date: today, startTime: '10:00', endTime: '12:00', priority: 'critical', category: 'work', status: 'todo', source: 'chrono', createdAt: today, order: 0 },
+    { id: uuidv4(), title: 'Design Review Meeting', description: 'Review new dashboard mockups with the team', date: today, startTime: '13:00', endTime: '14:00', priority: 'high', category: 'work', status: 'todo', source: 'teams', createdAt: today, order: 1 },
+    { id: uuidv4(), title: 'Code Review: Auth Module', description: 'Review PR #247 for the authentication refactor', date: today, startTime: '14:30', endTime: '15:30', priority: 'high', category: 'work', status: 'todo', source: 'chrono', createdAt: today, order: 2 },
+    { id: uuidv4(), title: 'Workout', description: 'Evening run + strength training', date: today, startTime: '18:00', endTime: '19:00', priority: 'medium', category: 'health', status: 'todo', source: 'chrono', createdAt: today, order: 3 },
+    { id: uuidv4(), title: 'Read research papers', description: 'Transformer architecture papers', date: today, startTime: '20:00', endTime: '21:00', priority: 'low', category: 'study', status: 'todo', source: 'chrono', createdAt: today, order: 4 },
+    { id: uuidv4(), title: 'Client presentation prep', description: 'Prepare slides for Q2 review', date: tomorrow, startTime: '09:00', endTime: '11:00', priority: 'critical', category: 'work', status: 'todo', source: 'chrono', createdAt: today, order: 0 },
+    { id: uuidv4(), title: 'Dentist appointment', description: 'Regular checkup', date: tomorrow, startTime: '15:00', endTime: '16:00', priority: 'medium', category: 'personal', status: 'todo', source: 'google', createdAt: today, order: 1 },
+    { id: uuidv4(), title: 'Sprint planning', description: 'Plan next sprint tasks and priorities', date: dayAfter, startTime: '10:00', endTime: '12:00', priority: 'high', category: 'work', status: 'todo', source: 'teams', createdAt: today, order: 0 },
+    { id: uuidv4(), title: 'Database migration', description: 'Run migration scripts for v2 schema', date: dayAfter, startTime: '14:00', endTime: '16:00', priority: 'critical', category: 'work', status: 'todo', source: 'chrono', createdAt: today, order: 1 },
+    { id: uuidv4(), title: 'Team lunch', description: 'Monthly team building lunch', date: threeDays, startTime: '12:00', endTime: '13:30', priority: 'low', category: 'personal', status: 'todo', source: 'google', createdAt: today, order: 0 },
   ];
 }
 
@@ -73,13 +65,18 @@ const initialState: ChronoState = {
     weeklyConsistency: new Array(7).fill(0),
   },
   userName: 'User',
+  user: null,
+  isAuthenticated: false,
 };
 
 // ─── Actions ────────────────────────────────────────────────────
 
 type Action =
   | { type: 'INIT'; payload: ChronoState }
-  | { type: 'ADD_TASK'; payload: Omit<Task, 'id' | 'createdAt' | 'order'> }
+  | { type: 'SET_USER'; payload: UserProfile | null }
+  | { type: 'SET_TASKS'; payload: Task[] }
+  | { type: 'ADD_TASK'; payload: Task }
+  | { type: 'ADD_TASK_LOCAL'; payload: Omit<Task, 'id' | 'createdAt' | 'order'> }
   | { type: 'UPDATE_TASK'; payload: { id: string; updates: Partial<Task> } }
   | { type: 'DELETE_TASK'; payload: string }
   | { type: 'TOGGLE_TASK'; payload: string }
@@ -93,7 +90,21 @@ function reducer(state: ChronoState, action: Action): ChronoState {
     case 'INIT':
       return action.payload;
 
-    case 'ADD_TASK': {
+    case 'SET_USER':
+      return {
+        ...state,
+        user: action.payload,
+        isAuthenticated: !!action.payload,
+        userName: action.payload?.name || state.userName,
+      };
+
+    case 'SET_TASKS':
+      return { ...state, tasks: action.payload };
+
+    case 'ADD_TASK':
+      return { ...state, tasks: [...state.tasks, action.payload] };
+
+    case 'ADD_TASK_LOCAL': {
       const dateTasks = state.tasks.filter(t => t.date === action.payload.date);
       const newTask: Task = {
         ...action.payload,
@@ -120,7 +131,7 @@ function reducer(state: ChronoState, action: Action): ChronoState {
         ...state,
         tasks: state.tasks.map(t => {
           if (t.id !== action.payload) return t;
-          const newStatus: TaskStatus = t.status === 'completed' ? 'pending' : 'completed';
+          const newStatus: TaskStatus = t.status === 'completed' ? 'todo' : 'completed';
           return {
             ...t,
             status: newStatus,
@@ -166,56 +177,172 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [initialized, setInitialized] = React.useState(false);
 
-  // Load from localStorage on mount
+  // ─── Initialize: check auth + load data ─────────────────────
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        dispatch({ type: 'INIT', payload: parsed });
-      } else {
-        // First time: generate sample data
-        dispatch({ type: 'INIT', payload: { ...initialState, tasks: generateSampleTasks() } });
+    async function init() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user) {
+          // Authenticated: load from Supabase
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+          const userProfile: UserProfile = {
+            id: user.id,
+            name: profile?.name || user.user_metadata?.full_name || 'User',
+            email: user.email || '',
+            avatar: profile?.avatar || user.user_metadata?.avatar_url || '',
+            timezone: profile?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+            createdAt: user.created_at,
+          };
+
+          dispatch({ type: 'SET_USER', payload: userProfile });
+
+          // Load tasks from Supabase
+          const tasks = await tasksApi.fetchTasks(user.id);
+          dispatch({ type: 'SET_TASKS', payload: tasks });
+
+          // Also cache to localStorage
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+              ...initialState,
+              tasks,
+              userName: userProfile.name,
+              user: userProfile,
+              isAuthenticated: true,
+            }));
+          } catch { /* ignore storage errors */ }
+
+        } else {
+          // Not authenticated: load from localStorage (offline / demo mode)
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            // Migrate old status values
+            if (parsed.tasks) {
+              parsed.tasks = parsed.tasks.map((t: Task) => ({
+                ...t,
+                status: t.status === 'pending' as unknown ? 'todo' : t.status === 'in-progress' as unknown ? 'in_progress' : t.status,
+              }));
+            }
+            dispatch({ type: 'INIT', payload: { ...parsed, user: null, isAuthenticated: false } });
+          } else {
+            dispatch({ type: 'INIT', payload: { ...initialState, tasks: generateSampleTasks() } });
+          }
+        }
+      } catch (err) {
+        console.error('Init error:', err);
+        // Fallback to localStorage
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            dispatch({ type: 'INIT', payload: JSON.parse(saved) });
+          } else {
+            dispatch({ type: 'INIT', payload: { ...initialState, tasks: generateSampleTasks() } });
+          }
+        } catch {
+          dispatch({ type: 'INIT', payload: { ...initialState, tasks: generateSampleTasks() } });
+        }
       }
-    } catch {
-      dispatch({ type: 'INIT', payload: { ...initialState, tasks: generateSampleTasks() } });
+      setInitialized(true);
     }
-    setInitialized(true);
+
+    init();
   }, []);
 
-  // Save to localStorage on state change
+  // ─── Persist to localStorage on state change ─────────────────
   useEffect(() => {
     if (initialized) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch { /* ignore */ }
     }
   }, [state, initialized]);
 
-  const addTask = useCallback((task: Omit<Task, 'id' | 'createdAt' | 'order'>) => {
-    dispatch({ type: 'ADD_TASK', payload: task });
-  }, []);
+  // ─── CRUD Actions ─────────────────────────────────────────────
 
-  const updateTask = useCallback((id: string, updates: Partial<Task>) => {
+  const addTask = useCallback(async (task: Omit<Task, 'id' | 'createdAt' | 'order'>) => {
+    if (state.isAuthenticated && state.user) {
+      try {
+        const created = await tasksApi.createTask(state.user.id, task);
+        dispatch({ type: 'ADD_TASK', payload: created });
+        return;
+      } catch (err) {
+        console.error('Supabase createTask failed, falling back:', err);
+      }
+    }
+    // Fallback: local-only
+    dispatch({ type: 'ADD_TASK_LOCAL', payload: task });
+  }, [state.isAuthenticated, state.user]);
+
+  const updateTask = useCallback(async (id: string, updates: Partial<Task>) => {
+    // Optimistic update
     dispatch({ type: 'UPDATE_TASK', payload: { id, updates } });
-  }, []);
 
-  const deleteTask = useCallback((id: string) => {
+    if (state.isAuthenticated) {
+      try {
+        await tasksApi.updateTask(id, updates);
+      } catch (err) {
+        console.error('Supabase updateTask failed:', err);
+      }
+    }
+  }, [state.isAuthenticated]);
+
+  const deleteTask = useCallback(async (id: string) => {
     dispatch({ type: 'DELETE_TASK', payload: id });
-  }, []);
 
-  const toggleTask = useCallback((id: string) => {
+    if (state.isAuthenticated) {
+      try {
+        await tasksApi.deleteTask(id);
+      } catch (err) {
+        console.error('Supabase deleteTask failed:', err);
+      }
+    }
+  }, [state.isAuthenticated]);
+
+  const toggleTask = useCallback(async (id: string) => {
+    // Optimistic toggle
     dispatch({ type: 'TOGGLE_TASK', payload: id });
-  }, []);
+
+    if (state.isAuthenticated) {
+      const task = state.tasks.find(t => t.id === id);
+      if (task) {
+        try {
+          await tasksApi.toggleTask(id, task.status);
+        } catch (err) {
+          console.error('Supabase toggleTask failed:', err);
+        }
+      }
+    }
+  }, [state.isAuthenticated, state.tasks]);
 
   const reorderTasks = useCallback((date: string, taskIds: string[]) => {
     dispatch({ type: 'REORDER_TASKS', payload: { date, taskIds } });
   }, []);
 
-  const setUserName = useCallback((name: string) => {
+  const setUserName = useCallback(async (name: string) => {
     dispatch({ type: 'SET_USERNAME', payload: name });
-  }, []);
+
+    if (state.isAuthenticated && state.user) {
+      try {
+        const supabase = createClient();
+        await supabase
+          .from('profiles')
+          .update({ name })
+          .eq('id', state.user.id);
+      } catch (err) {
+        console.error('Profile update failed:', err);
+      }
+    }
+  }, [state.isAuthenticated, state.user]);
 
   if (!initialized) {
-    return null; // Prevent hydration mismatch
+    return null;
   }
 
   return (

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Plus } from 'lucide-react';
-import { Task, Priority, TaskSource, PRIORITY_CONFIG, CATEGORIES } from '@/lib/types';
+import { Task, Priority, TaskSource, PRIORITY_CONFIG, CATEGORIES, CATEGORY_LABELS, TaskCategory } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 
 interface AddTaskModalProps {
@@ -45,7 +45,7 @@ export default function AddTaskModal({ isOpen, onClose, onSubmit, editTask }: Ad
     setStartTime('09:00');
     setEndTime('10:00');
     setPriority('medium');
-    setCategory('Work');
+    setCategory('work');
     setSource('chrono');
   }
 
@@ -62,7 +62,7 @@ export default function AddTaskModal({ isOpen, onClose, onSubmit, editTask }: Ad
       priority,
       category,
       source,
-      status: editTask?.status || 'pending',
+      status: editTask?.status || 'todo',
       completedAt: editTask?.completedAt,
     });
 
@@ -223,7 +223,7 @@ export default function AddTaskModal({ isOpen, onClose, onSubmit, editTask }: Ad
                            transition-colors appearance-none cursor-pointer"
                 >
                   {CATEGORIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                    <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>
                   ))}
                 </select>
               </div>
