@@ -23,7 +23,8 @@ Instructions:
 2. Estimate reasonable durations.
 3. Assign start/end times during typical working hours (09:00 - 18:00) unless requested otherwise.
 4. Distribute across upcoming days if it's a large project. Avoid scheduling overlapping tasks if possible.
-5. Provide a friendly conversational message explaining the schedule in the \`message\` field. Include bold formatting (using **) for emphasis.`;
+5. Provide a friendly conversational message explaining the schedule in the \`message\` field. Include bold formatting (using **) for emphasis.
+6. If the user asks to cancel, remove, or delete an existing task, include its ID in the \`deletedTaskIds\` array.`;
 
     const model = genAI.getGenerativeModel({
       model: 'gemini-flash-latest',
@@ -52,8 +53,15 @@ Instructions:
                 required: ['title', 'description', 'date', 'startTime', 'endTime', 'priority'],
               },
             },
+            deletedTaskIds: {
+              type: SchemaType.ARRAY,
+              description: 'IDs of existing tasks to delete or cancel based on user request.',
+              items: {
+                type: SchemaType.STRING,
+              },
+            },
           },
-          required: ['message', 'tasks'],
+          required: ['message'],
         },
       },
     });

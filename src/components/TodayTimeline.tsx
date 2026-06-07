@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Plus, CalendarDays } from 'lucide-react';
+import { motion, AnimatePresence, Reorder } from 'motion/react';
+import { Plus, CalendarDays, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { formatDate, formatDisplayDate, getMotivationalMessage, calculateDailyScore, getGreeting } from '@/lib/utils';
 import { Task } from '@/lib/types';
@@ -11,30 +11,42 @@ import AddTaskModal from './AddTaskModal';
 import ProductivityRing from './ProductivityRing';
 
 export default function TodayTimeline() {
-  const { state, addTask, updateTask, deleteTask, toggleTask } = useStore();
+  const { state, addTask, updateTask, deleteTask, toggleTask, setSelectedDate, reorderTasks } = useStore();
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  const today = formatDate(new Date());
+  const selectedDateObj = new Date(state.selectedDate + 'T00:00:00');
+  const isToday = state.selectedDate === formatDate(new Date());
 
-  const todayTasks = useMemo(
+  const dayTasks = useMemo(
     () => state.tasks
-      .filter(t => t.date === today)
+      .filter(t => t.date === state.selectedDate)
       .sort((a, b) => {
-        // Completed tasks go to bottom
         if (a.status === 'completed' && b.status !== 'completed') return 1;
         if (a.status !== 'completed' && b.status === 'completed') return -1;
         return a.order - b.order || a.startTime.localeCompare(b.startTime);
       }),
-    [state.tasks, today]
+    [state.tasks, state.selectedDate]
   );
 
   const dailyScore = useMemo(
-    () => calculateDailyScore(state.tasks, today),
-    [state.tasks, today]
+    () => calculateDailyScore(state.tasks, state.selectedDate),
+    [state.tasks, state.selectedDate]
   );
 
-  const completedCount = todayTasks.filter(t => t.status === 'completed').length;
+  const completedCount = dayTasks.filter(t => t.status === 'completed').length;
+
+  function handlePrevDay() {
+    const d = new Date(selectedDateObj);
+    d.setDate(d.getDate() - 1);
+    setSelectedDate(formatDate(d));
+  }
+
+  function handleNextDay() {
+    const d = new Date(selectedDateObj);
+    d.setDate(d.getDate() + 1);
+    setSelectedDate(formatDate(d));
+  }
 
   function handleSubmit(task: Omit<Task, 'id' | 'createdAt' | 'order'>) {
     if (editingTask) {
@@ -56,11 +68,31 @@ export default function TodayTimeline() {
       <div className="flex-shrink-0 px-6 pt-6 pb-4">
         <div className="flex items-start justify-between">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <CalendarDays size={14} className="text-chrono-text-muted" />
-              <span className="text-xs text-chrono-text-muted font-medium uppercase tracking-wider">
-                {formatDisplayDate(new Date())}
-              </span>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="flex items-center gap-2">
+                <button onClick={handlePrevDay} className="text-chrono-text-muted hover:text-white transition-colors">
+                  <ChevronLeft size={16} />
+                </button>
+                <div className="flex items-center gap-1.5 min-w-[110px] justify-center">
+                  <CalendarDays size={14} className="text-chrono-text-muted" />
+                  <span className="text-xs text-chrono-text-muted font-medium uppercase tracking-wider">
+                    {formatDisplayDate(selectedDateObj)}
+                  </span>
+                </div>
+                <button onClick={handleNextDay} className="text-chrono-text-muted hover:text-white transition-colors">
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+              {!isToday && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  onClick={() => setSelectedDate(formatDate(new Date()))}
+                  className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-white/[0.05] border border-white/10 hover:bg-white/[0.1] transition-colors"
+                >
+                  Today
+                </motion.button>
+              )}
             </div>
             <h1 className="text-2xl font-bold gradient-text mb-1">
               {getGreeting()}
@@ -76,11 +108,11 @@ export default function TodayTimeline() {
         <div className="flex items-center gap-4 mt-4">
           <div className="flex items-center gap-2 text-xs text-chrono-text-secondary">
             <div className="w-2 h-2 rounded-full bg-priority-low" />
-            <span>{completedCount}/{todayTasks.length} completed</span>
+            <span>{completedCount}/{dayTasks.length} completed</span>
           </div>
           <div className="h-3 w-px bg-chrono-border" />
           <div className="text-xs text-chrono-text-muted">
-            {todayTasks.filter(t => t.status !== 'completed').length} remaining
+            {dayTasks.filter(t => t.status !== 'completed').length} remaining
           </div>
         </div>
       </div>
@@ -92,7 +124,7 @@ export default function TodayTimeline() {
       <div className="flex-1 overflow-y-auto px-6 py-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xs font-semibold text-chrono-text-secondary uppercase tracking-wider">
-            Today&apos;s Tasks
+            {isToday ? "Today's Timeline" : `${selectedDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} Timeline`}
           </h3>
           <button
             onClick={() => { setEditingTask(null); setShowModal(true); }}
@@ -107,21 +139,49 @@ export default function TodayTimeline() {
         </div>
 
         <AnimatePresence mode="popLayout">
-          {todayTasks.length === 0 ? (
+          {dayTasks.length === 0 ? (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              key="empty-state"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
               className="flex flex-col items-center justify-center py-12 text-center"
             >
-              <div className="w-16 h-16 rounded-2xl bg-white/[0.03] flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center mb-5">
                 <CalendarDays size={24} className="text-chrono-text-muted" />
               </div>
-              <p className="text-sm text-chrono-text-muted">No tasks for today</p>
-              <p className="text-xs text-chrono-text-muted mt-1">Click &ldquo;Add Task&rdquo; to get started</p>
+              <p className="text-sm font-medium text-chrono-text mb-1">No missions planned</p>
+              <p className="text-xs text-chrono-text-muted max-w-[200px] mb-6">
+                Your timeline is clear for {isToday ? 'today' : formatDisplayDate(selectedDateObj)}.
+              </p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => { setEditingTask(null); setShowModal(true); }}
+                  className="px-4 py-2 rounded-xl text-xs font-medium bg-white text-black hover:bg-gray-200 transition-colors"
+                >
+                  Add Task
+                </button>
+                <button
+                  onClick={() => window.location.href = '/dashboard/ai'}
+                  className="px-4 py-2 rounded-xl text-xs font-medium bg-violet-500/20 text-violet-400 border border-violet-500/30 hover:bg-violet-500/30 transition-colors flex items-center gap-1.5"
+                >
+                  <Sparkles size={14} />
+                  Ask AI
+                </button>
+              </div>
             </motion.div>
           ) : (
-            <div className="space-y-2">
-              {todayTasks.map((task, i) => (
+            <Reorder.Group 
+              axis="y" 
+              values={dayTasks} 
+              onReorder={(newOrder) => {
+                // Ensure external events aren't reordered if they are strictly time-bound,
+                // but for simplicity, we pass the new order IDs to the store.
+                reorderTasks(state.selectedDate, newOrder.map(t => t.id));
+              }} 
+              className="space-y-2"
+            >
+              {dayTasks.map((task, i) => (
                 <TaskCard
                   key={task.id}
                   task={task}
@@ -131,7 +191,7 @@ export default function TodayTimeline() {
                   onEdit={handleEdit}
                 />
               ))}
-            </div>
+            </Reorder.Group>
           )}
         </AnimatePresence>
       </div>

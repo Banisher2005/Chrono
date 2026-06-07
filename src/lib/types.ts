@@ -64,6 +64,17 @@ export interface FocusSession {
   completed: boolean;
 }
 
+export interface IntegrationToken {
+  id: string;
+  userId: string;
+  provider: EventProvider;
+  accessToken: string;
+  refreshToken?: string;
+  expiresAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface AIMessage {
   id: string;
   role: 'user' | 'ai';
@@ -130,6 +141,7 @@ export interface ChronoState {
   userName: string;
   user: UserProfile | null;
   isAuthenticated: boolean;
+  selectedDate: string;
 }
 
 // ─── Config ─────────────────────────────────────────────────────

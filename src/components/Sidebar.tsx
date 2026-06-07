@@ -13,12 +13,14 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Brain,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/dashboard/calendar', icon: Calendar, label: 'Calendar' },
   { href: '/dashboard/grid', icon: Grid3X3, label: 'Chrono Grid' },
+  { href: '/dashboard/focus', icon: Brain, label: 'Focus Mode' },
   { href: '/dashboard/ai', icon: Sparkles, label: 'Chrono AI' },
   { href: '/dashboard/analytics', icon: BarChart3, label: 'Analytics' },
   { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
@@ -113,7 +115,7 @@ export default function Sidebar() {
 export function MobileNav() {
   const pathname = usePathname();
 
-  const mobileItems = NAV_ITEMS.slice(0, 5); // No settings in mobile nav
+  const mobileItems = NAV_ITEMS.slice(0, 5); // Exclude analytics & settings on mobile nav
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 glass-strong border-t border-chrono-border/50">

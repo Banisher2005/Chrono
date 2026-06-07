@@ -2,13 +2,33 @@
 
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Palette, Bell, Database, Shield, ExternalLink, Trash2 } from 'lucide-react';
+import { User, Palette, Bell, Database, Shield, ExternalLink, Trash2, CheckCircle2 } from 'lucide-react';
 import { useStore } from '@/lib/store';
+import { createClient } from '@/lib/supabase/client';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect } from 'react';
 
-export default function SettingsPage() {
+function SettingsContent() {
   const { state, setUserName } = useStore();
   const [name, setName] = useState(state.userName);
   const [saved, setSaved] = useState(false);
+  const [googleConnected, setGoogleConnected] = useState(false);
+  
+  const searchParams = useSearchParams();
+  const successParam = searchParams.get('success');
+  const errorParam = searchParams.get('error');
+
+  useEffect(() => {
+    async function checkStatus() {
+      if (!state.isAuthenticated || !state.user) return;
+      const supabase = createClient();
+      const { data } = await supabase.from('integration_tokens').select('provider').eq('user_id', state.user.id);
+      if (data) {
+        setGoogleConnected(data.some(t => t.provider === 'google'));
+      }
+    }
+    checkStatus();
+  }, [state.isAuthenticated, state.user]);
 
   function handleSave() {
     setUserName(name);
@@ -29,6 +49,17 @@ export default function SettingsPage() {
         <div className="mb-8">
           <h1 className="text-2xl font-bold gradient-text mb-1">Settings</h1>
           <p className="text-sm text-chrono-text-muted">Customize your Chrono experience</p>
+          {successParam && (
+            <div className="mt-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm flex items-center gap-2">
+              <CheckCircle2 size={16} />
+              {successParam === 'google_connected' && 'Google Calendar connected successfully!'}
+            </div>
+          )}
+          {errorParam && (
+            <div className="mt-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+              Error connecting integration: {errorParam}
+            </div>
+          )}
         </div>
 
         <div className="space-y-4">
@@ -87,24 +118,35 @@ export default function SettingsPage() {
             </div>
             <div className="space-y-3">
               {[
-                { name: 'Google Calendar', icon: '📅', status: 'Available in Phase 2', connected: false },
-                { name: 'Microsoft Teams', icon: '💬', status: 'Available in Phase 2', connected: false },
+                { name: 'Google Calendar', icon: '📅', authUrl: '/api/integrations/google/auth', connected: googleConnected },
               ].map((integration) => (
                 <div key={integration.name} className="flex items-center justify-between px-4 py-3 rounded-xl bg-white/[0.03]">
                   <div className="flex items-center gap-3">
                     <span className="text-lg">{integration.icon}</span>
                     <div>
                       <p className="text-sm font-medium text-chrono-text">{integration.name}</p>
-                      <p className="text-[10px] text-chrono-text-muted">{integration.status}</p>
+                      <p className="text-[10px] text-chrono-text-muted">
+                        {integration.connected ? 'Connected and syncing' : 'Not connected'}
+                      </p>
                     </div>
                   </div>
-                  <button
-                    disabled
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.04] text-chrono-text-muted
-                             border border-chrono-border/30 cursor-not-allowed opacity-50"
-                  >
-                    Connect
-                  </button>
+                  {integration.connected ? (
+                    <button
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium bg-green-500/10 text-green-400
+                               border border-green-500/20"
+                    >
+                      Connected
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => window.location.href = integration.authUrl}
+                      disabled={!state.isAuthenticated}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.06] hover:bg-white/[0.1] text-chrono-text
+                               border border-chrono-border/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {state.isAuthenticated ? 'Connect' : 'Sign in to connect'}
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -170,5 +212,13 @@ export default function SettingsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-chrono-text-muted text-sm">Loading settings...</div>}>
+      <SettingsContent />
+    </Suspense>
   );
 }

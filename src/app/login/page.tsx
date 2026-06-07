@@ -9,7 +9,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleOAuth(provider: 'google' | 'azure') {
+  async function handleOAuth(provider: 'google') {
     setLoading(provider);
     setError(null);
 
@@ -19,9 +19,7 @@ export default function LoginPage() {
         provider,
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
-          scopes: provider === 'google'
-            ? 'email profile https://www.googleapis.com/auth/calendar'
-            : 'email profile openid Calendars.ReadWrite',
+          scopes: 'email profile https://www.googleapis.com/auth/calendar',
         },
       });
 
@@ -76,26 +74,6 @@ export default function LoginPage() {
             <span className="text-sm font-medium text-chrono-text">Continue with Google</span>
           </button>
 
-          <button
-            onClick={() => handleOAuth('azure')}
-            disabled={!!loading}
-            className="w-full flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl
-                     glass hover:bg-chrono-surface-2/80
-                     border border-chrono-border/50 hover:border-chrono-border-light
-                     transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
-          >
-            {loading === 'azure' ? (
-              <Loader2 size={18} className="animate-spin text-chrono-text-muted" />
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 23 23" fill="none">
-                <path d="M1 1h10v10H1V1z" fill="#F25022"/>
-                <path d="M12 1h10v10H12V1z" fill="#7FBA00"/>
-                <path d="M1 12h10v10H1V12z" fill="#00A4EF"/>
-                <path d="M12 12h10v10H12V12z" fill="#FFB900"/>
-              </svg>
-            )}
-            <span className="text-sm font-medium text-chrono-text">Continue with Microsoft</span>
-          </button>
         </div>
 
         {/* Error */}

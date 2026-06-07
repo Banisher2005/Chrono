@@ -4,13 +4,15 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, addMonths, subMonths } from 'date-fns';
+import { useRouter } from 'next/navigation';
 import { useStore } from '@/lib/store';
-import { getMonthHeatmapData, getCalendarGridOffset, getIntensityColor, getIntensityLabel } from '@/lib/utils';
+import { getMonthHeatmapData, getCalendarGridOffset, getIntensityColor, getIntensityLabel, formatDate } from '@/lib/utils';
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export default function ChronoGrid() {
-  const { state } = useStore();
+  const { state, setSelectedDate } = useStore();
+  const router = useRouter();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [hoveredDay, setHoveredDay] = useState<string | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
@@ -34,6 +36,11 @@ export default function ChronoGrid() {
     setHoveredDay(date);
     const rect = event.currentTarget.getBoundingClientRect();
     setTooltipPos({ x: rect.left + rect.width / 2, y: rect.top - 8 });
+  }
+
+  function handleDayClick(date: string) {
+    setSelectedDate(date);
+    router.push('/dashboard');
   }
 
   return (
@@ -81,20 +88,23 @@ export default function ChronoGrid() {
         {/* Day cells */}
         {heatmapData.map((day, i) => {
           const dateNum = parseInt(day.date.split('-')[2]);
-          const isToday = day.date === new Date().toISOString().split('T')[0];
+          const isToday = day.date === formatDate(new Date());
+          const isSelected = day.date === state.selectedDate;
 
           return (
-            <motion.div
+            <motion.button
               key={day.date}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: i * 0.02, duration: 0.3 }}
               onMouseEnter={(e) => handleMouseEnter(day.date, e)}
               onMouseLeave={() => setHoveredDay(null)}
+              onClick={() => handleDayClick(day.date)}
               className={`
                 heatmap-cell aspect-square rounded-md flex items-center justify-center
-                text-[9px] font-medium relative
-                ${isToday ? 'ring-1 ring-chrono-text/30' : ''}
+                text-[9px] font-medium relative hover:z-10 focus:outline-none
+                ${isToday && !isSelected ? 'ring-2 ring-white/20 shadow-[0_0_8px_rgba(255,255,255,0.2)]' : ''}
+                ${isSelected ? 'ring-2 ring-white ring-offset-1 ring-offset-chrono-bg z-10' : ''}
               `}
               style={{ backgroundColor: getIntensityColor(day.intensity) }}
             >
@@ -103,7 +113,7 @@ export default function ChronoGrid() {
               `}>
                 {dateNum}
               </span>
-            </motion.div>
+            </motion.button>
           );
         })}
       </div>

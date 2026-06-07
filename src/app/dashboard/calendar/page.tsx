@@ -8,11 +8,11 @@ import { useStore } from '@/lib/store';
 import { formatDate, formatTime, getTaskDuration, formatDuration } from '@/lib/utils';
 import { Task, PRIORITY_CONFIG } from '@/lib/types';
 import AddTaskModal from '@/components/AddTaskModal';
+import TaskCard from '@/components/TaskCard';
 
 export default function CalendarPage() {
-  const { state, addTask, updateTask, toggleTask, deleteTask } = useStore();
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<string>(formatDate(new Date()));
+  const { state, addTask, updateTask, toggleTask, deleteTask, setSelectedDate } = useStore();
+  const [currentMonth, setCurrentMonth] = useState(new Date(state.selectedDate + 'T00:00:00'));
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
@@ -28,9 +28,9 @@ export default function CalendarPage() {
 
   const selectedTasks = useMemo(
     () => state.tasks
-      .filter(t => t.date === selectedDate)
+      .filter(t => t.date === state.selectedDate)
       .sort((a, b) => a.startTime.localeCompare(b.startTime)),
-    [state.tasks, selectedDate]
+    [state.tasks, state.selectedDate]
   );
 
   const tasksByDate = useMemo(() => {
@@ -45,7 +45,7 @@ export default function CalendarPage() {
     if (editingTask) {
       updateTask(editingTask.id, task);
     } else {
-      addTask({ ...task, date: selectedDate });
+      addTask({ ...task, date: state.selectedDate });
     }
     setEditingTask(null);
   }
@@ -74,6 +74,15 @@ export default function CalendarPage() {
               <ChevronRight size={18} />
             </button>
           </div>
+          <button
+            onClick={() => {
+              setSelectedDate(todayStr);
+              setCurrentMonth(new Date());
+            }}
+            className="hidden sm:flex px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.05] border border-white/10 hover:bg-white/[0.1] transition-colors"
+          >
+            Jump to Today
+          </button>
         </div>
 
         {/* Day Headers */}
@@ -93,7 +102,7 @@ export default function CalendarPage() {
           {days.map((day, i) => {
             const dateStr = formatDate(day);
             const isToday = dateStr === todayStr;
-            const isSelected = dateStr === selectedDate;
+            const isSelected = dateStr === state.selectedDate;
             const taskCount = tasksByDate[dateStr] || 0;
 
             return (
@@ -132,10 +141,10 @@ export default function CalendarPage() {
         <div className="flex items-center justify-between px-5 py-4 border-b border-chrono-border/30">
           <div>
             <p className="text-sm font-semibold text-chrono-text">
-              {format(new Date(selectedDate + 'T00:00:00'), 'EEEE')}
+              {format(new Date(state.selectedDate + 'T00:00:00'), 'EEEE')}
             </p>
             <p className="text-xs text-chrono-text-muted">
-              {format(new Date(selectedDate + 'T00:00:00'), 'MMMM d, yyyy')}
+              {format(new Date(state.selectedDate + 'T00:00:00'), 'MMMM d, yyyy')}
             </p>
           </div>
           <button
@@ -155,46 +164,14 @@ export default function CalendarPage() {
             </div>
           ) : (
             selectedTasks.map((task, i) => (
-              <motion.div
+              <TaskCard
                 key={task.id}
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="glass rounded-xl p-3 cursor-pointer hover:bg-white/[0.04] transition-colors"
-                style={{ borderLeft: `3px solid ${PRIORITY_CONFIG[task.priority].color}` }}
-                onClick={() => { setEditingTask(task); setShowModal(true); }}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-medium ${task.status === 'completed' ? 'line-through text-chrono-text-muted' : 'text-chrono-text'}`}>
-                      {task.title}
-                    </p>
-                    {task.description && (
-                      <p className="text-xs text-chrono-text-muted mt-0.5 line-clamp-1">{task.description}</p>
-                    )}
-                    <div className="flex items-center gap-2 mt-1.5">
-                      {task.startTime && (
-                        <span className="text-[10px] text-chrono-text-muted">
-                          {formatTime(task.startTime)}{task.endTime ? ` – ${formatTime(task.endTime)}` : ''}
-                        </span>
-                      )}
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{
-                        backgroundColor: `${PRIORITY_CONFIG[task.priority].color}15`,
-                        color: PRIORITY_CONFIG[task.priority].color,
-                      }}>
-                        {PRIORITY_CONFIG[task.priority].label}
-                      </span>
-                    </div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={task.status === 'completed'}
-                    onChange={(e) => { e.stopPropagation(); toggleTask(task.id); }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="task-checkbox mt-0.5 flex-shrink-0"
-                  />
-                </div>
-              </motion.div>
+                task={task}
+                index={i}
+                onToggle={toggleTask}
+                onDelete={deleteTask}
+                onEdit={(t) => { setEditingTask(t); setShowModal(true); }}
+              />
             ))
           )}
         </div>

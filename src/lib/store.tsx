@@ -67,6 +67,7 @@ const initialState: ChronoState = {
   userName: 'User',
   user: null,
   isAuthenticated: false,
+  selectedDate: formatDate(new Date()),
 };
 
 // ─── Actions ────────────────────────────────────────────────────
@@ -81,7 +82,8 @@ type Action =
   | { type: 'DELETE_TASK'; payload: string }
   | { type: 'TOGGLE_TASK'; payload: string }
   | { type: 'REORDER_TASKS'; payload: { date: string; taskIds: string[] } }
-  | { type: 'SET_USERNAME'; payload: string };
+  | { type: 'SET_USERNAME'; payload: string }
+  | { type: 'SET_SELECTED_DATE'; payload: string };
 
 // ─── Reducer ────────────────────────────────────────────────────
 
@@ -152,6 +154,9 @@ function reducer(state: ChronoState, action: Action): ChronoState {
     case 'SET_USERNAME':
       return { ...state, userName: action.payload };
 
+    case 'SET_SELECTED_DATE':
+      return { ...state, selectedDate: action.payload };
+
     default:
       return state;
   }
@@ -167,6 +172,7 @@ interface StoreContextType {
   toggleTask: (id: string) => void;
   reorderTasks: (date: string, taskIds: string[]) => void;
   setUserName: (name: string) => void;
+  setSelectedDate: (date: string) => void;
 }
 
 const StoreContext = createContext<StoreContextType | null>(null);
@@ -204,10 +210,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           dispatch({ type: 'SET_USER', payload: userProfile });
 
           // Load tasks from Supabase
-          const tasks = await tasksApi.fetchTasks(user.id);
-          dispatch({ type: 'SET_TASKS', payload: tasks });
+          let tasks = await tasksApi.fetchTasks(user.id);
+          
+          // Load external calendar events
+          try {
+            const eventsRes = await fetch('/api/integrations/events');
+            if (eventsRes.ok) {
+              const { tasks: externalTasks } = await eventsRes.json();
+              if (externalTasks && externalTasks.length > 0) {
+                // Filter out external tasks from DB to avoid duplicates if they were cached previously
+                tasks = tasks.filter(t => t.source === 'chrono');
+                tasks = [...tasks, ...externalTasks];
+              }
+            }
+          } catch (err) {
+            console.error('Failed to fetch external events:', err);
+          }
 
-          // Also cache to localStorage
+          dispatch({ type: 'SET_TASKS', payload: tasks });
           try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify({
               ...initialState,
@@ -230,7 +250,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 status: t.status === 'pending' as unknown ? 'todo' : t.status === 'in-progress' as unknown ? 'in_progress' : t.status,
               }));
             }
-            dispatch({ type: 'INIT', payload: { ...parsed, user: null, isAuthenticated: false } });
+            dispatch({ type: 'INIT', payload: { ...initialState, ...parsed, selectedDate: parsed.selectedDate || formatDate(new Date()), user: null, isAuthenticated: false } });
           } else {
             dispatch({ type: 'INIT', payload: { ...initialState, tasks: generateSampleTasks() } });
           }
@@ -241,7 +261,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         try {
           const saved = localStorage.getItem(STORAGE_KEY);
           if (saved) {
-            dispatch({ type: 'INIT', payload: JSON.parse(saved) });
+            const parsed = JSON.parse(saved);
+            dispatch({ type: 'INIT', payload: { ...initialState, ...parsed, selectedDate: parsed.selectedDate || formatDate(new Date()) } });
           } else {
             dispatch({ type: 'INIT', payload: { ...initialState, tasks: generateSampleTasks() } });
           }
@@ -321,9 +342,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, [state.isAuthenticated, state.tasks]);
 
-  const reorderTasks = useCallback((date: string, taskIds: string[]) => {
+  const reorderTasks = useCallback(async (date: string, taskIds: string[]) => {
+    // Optimistic UI update
     dispatch({ type: 'REORDER_TASKS', payload: { date, taskIds } });
-  }, []);
+
+    if (state.isAuthenticated) {
+      try {
+        await tasksApi.updateTaskOrder(taskIds);
+      } catch (err) {
+        console.error('Supabase updateTaskOrder failed:', err);
+      }
+    }
+  }, [state.isAuthenticated]);
 
   const setUserName = useCallback(async (name: string) => {
     dispatch({ type: 'SET_USERNAME', payload: name });
@@ -341,12 +371,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, [state.isAuthenticated, state.user]);
 
+  const setSelectedDate = useCallback((date: string) => {
+    dispatch({ type: 'SET_SELECTED_DATE', payload: date });
+  }, []);
+
   if (!initialized) {
     return null;
   }
 
   return (
-    <StoreContext.Provider value={{ state, addTask, updateTask, deleteTask, toggleTask, reorderTasks, setUserName }}>
+    <StoreContext.Provider value={{ state, addTask, updateTask, deleteTask, toggleTask, reorderTasks, setUserName, setSelectedDate }}>
       {children}
     </StoreContext.Provider>
   );

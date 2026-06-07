@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Send, Sparkles, Calendar, CheckCircle2, Loader2 } from 'lucide-react';
+import { Send, Sparkles, Calendar, CheckCircle2, Loader2, Trash2 } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { formatDate } from '@/lib/utils';
 import { addDays, format } from 'date-fns';
@@ -13,6 +13,7 @@ interface Message {
   role: 'user' | 'ai';
   content: string;
   tasks?: Array<{ title: string; date: string; priority: Priority; description: string; startTime: string; endTime: string }>;
+  deletedTaskIds?: string[];
   applied?: boolean;
 }
 
@@ -21,7 +22,7 @@ import { saveAIMessage } from '@/lib/api/ai-history';
 // ─── AI Scheduler ────────────────────────────────────
 
 export default function AISchedulerPage() {
-  const { state, addTask } = useStore();
+  const { state, addTask, deleteTask } = useStore();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -66,7 +67,8 @@ export default function AISchedulerPage() {
         id: (Date.now() + 1).toString(),
         role: 'ai',
         content: data.message,
-        tasks: data.tasks,
+        tasks: data.tasks || [],
+        deletedTaskIds: data.deletedTaskIds || [],
         applied: false,
       };
 
@@ -90,21 +92,27 @@ export default function AISchedulerPage() {
 
   function handleApply(msgId: string) {
     const msg = messages.find(m => m.id === msgId);
-    if (!msg?.tasks) return;
+    if (!msg || (!msg.tasks?.length && !msg.deletedTaskIds?.length)) return;
 
-    msg.tasks.forEach(task => {
-      addTask({
-        title: task.title,
-        description: task.description,
-        date: task.date,
-        startTime: task.startTime,
-        endTime: task.endTime,
-        priority: task.priority,
-        category: 'Work',
-        source: 'chrono',
-        status: 'todo',
+    if (msg.tasks) {
+      msg.tasks.forEach(task => {
+        addTask({
+          title: task.title,
+          description: task.description,
+          date: task.date,
+          startTime: task.startTime,
+          endTime: task.endTime,
+          priority: task.priority,
+          category: 'Work',
+          source: 'chrono',
+          status: 'todo',
+        });
       });
-    });
+    }
+
+    if (msg.deletedTaskIds) {
+      msg.deletedTaskIds.forEach(id => deleteTask(id));
+    }
 
     setMessages(prev =>
       prev.map(m => m.id === msgId ? { ...m, applied: true } : m)
@@ -166,7 +174,7 @@ export default function AISchedulerPage() {
                     </p>
                     {msg.tasks.map((task, j) => (
                       <motion.div
-                        key={j}
+                        key={`add-${j}`}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: j * 0.1 }}
@@ -188,12 +196,44 @@ export default function AISchedulerPage() {
                         </div>
                       </motion.div>
                     ))}
+                  </div>
+                )}
 
-                    {/* Apply Button */}
+                {/* Deleted Tasks */}
+                {msg.deletedTaskIds && msg.deletedTaskIds.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    <div className="h-px bg-chrono-border/30" />
+                    <p className="text-[10px] text-red-400/80 uppercase tracking-wider font-semibold flex items-center gap-1">
+                      <Trash2 size={10} />
+                      Tasks to Remove
+                    </p>
+                    {msg.deletedTaskIds.map((id, j) => {
+                      const t = state.tasks.find(t => t.id === id);
+                      if (!t) return null;
+                      return (
+                        <motion.div
+                          key={`del-${id}`}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: j * 0.1 }}
+                          className="flex items-center gap-3 px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-red-400 line-through truncate">{t.title}</p>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Apply Button */}
+                {((msg.tasks && msg.tasks.length > 0) || (msg.deletedTaskIds && msg.deletedTaskIds.length > 0)) && (
+                  <div className="mt-4">
                     <motion.button
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ delay: msg.tasks.length * 0.1 + 0.2 }}
+                      transition={{ delay: (msg.tasks?.length ?? 0) * 0.1 + 0.2 }}
                       onClick={() => handleApply(msg.id)}
                       disabled={msg.applied}
                       className={`

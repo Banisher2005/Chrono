@@ -92,3 +92,18 @@ export async function toggleTask(taskId: string, currentStatus: string): Promise
   if (error) throw error;
   return dbRowToTask(data);
 }
+
+export async function updateTaskOrder(taskIds: string[]): Promise<void> {
+  const promises = taskIds.map((id, index) =>
+    supabase
+      .from('tasks')
+      .update({ sort_order: index })
+      .eq('id', id)
+  );
+
+  const results = await Promise.all(promises);
+  const errors = results.filter(r => r.error);
+  if (errors.length > 0) {
+    throw new Error('Failed to update some task orders');
+  }
+}
