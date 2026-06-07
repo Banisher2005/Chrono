@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { dispatch, state } = useStore();
+  const { addTask, state } = useStore();
   const [step, setStep] = useState(1);
   const [selections, setSelections] = useState({
     context: '',
@@ -26,40 +26,28 @@ export default function OnboardingPage() {
     const today = new Date().toISOString().split('T')[0];
     
     // Dispatch dummy tasks based on selection
-    dispatch({
-      type: 'ADD_TASK',
-      payload: {
-        id: uuidv4(),
-        title: `Plan ${selections.context || 'my week'}`,
-        description: 'Take 15 minutes to organize priorities.',
-        date: today,
-        startTime: '09:00',
-        endTime: '09:15',
-        priority: 'high',
-        category: 'personal',
-        status: 'todo',
-        source: 'chrono',
-        order: 0,
-        createdAt: new Date().toISOString()
-      }
+    addTask({
+      title: `Plan ${selections.context || 'my week'}`,
+      description: 'Take 15 minutes to organize priorities.',
+      date: today,
+      startTime: '09:00',
+      endTime: '09:15',
+      priority: 'high',
+      category: 'Personal', // Needs to be capitalized matching Category type
+      status: 'todo',
+      source: 'chrono'
     });
 
-    dispatch({
-      type: 'ADD_TASK',
-      payload: {
-        id: uuidv4(),
-        title: 'Deep Work Session',
-        description: `Dedicated time for high-value tasks (${selections.focusTime || 'Afternoon'}).`,
-        date: today,
-        startTime: '14:00',
-        endTime: '16:00',
-        priority: 'critical',
-        category: 'work',
-        status: 'todo',
-        source: 'chrono',
-        order: 1,
-        createdAt: new Date().toISOString()
-      }
+    addTask({
+      title: 'Deep Work Session',
+      description: `Dedicated time for high-value tasks (${selections.focusTime || 'Afternoon'}).`,
+      date: today,
+      startTime: '14:00',
+      endTime: '16:00',
+      priority: 'critical',
+      category: 'Work', // Needs to be capitalized matching Category type
+      status: 'todo',
+      source: 'chrono'
     });
 
     router.push('/dashboard');

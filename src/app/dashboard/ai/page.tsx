@@ -18,7 +18,6 @@ interface Message {
   updatedTasks?: Partial<Task>[];
   applied?: boolean;
   rejected?: boolean;
-  applied?: boolean;
 }
 
 import { saveAIMessage } from '@/lib/api/ai-history';
