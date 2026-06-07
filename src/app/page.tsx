@@ -236,7 +236,8 @@ function Section3_Grid() {
             {Array.from({ length: 24 }).map((_, col) => (
               <div key={col} className="flex flex-col gap-2">
                 {Array.from({ length: 7 }).map((_, row) => {
-                  const intensity = Math.random();
+                  // Use a predictable pseudo-random value based on col and row to prevent hydration mismatch
+                  const intensity = Math.abs(Math.sin(col * 10 + row * 3.14));
                   let color = 'bg-white/5';
                   if (intensity > 0.9) color = 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]';
                   else if (intensity > 0.7) color = 'bg-red-500/70';
