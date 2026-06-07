@@ -181,34 +181,36 @@ export default function TaskCard({ task, index, onToggle, onDelete, onEdit }: Ta
         )}
       </AnimatePresence>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal — fixed overlay */}
       <AnimatePresence>
         {showDeleteConfirm && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-20 flex items-center justify-center bg-chrono-surface/90 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => setShowDeleteConfirm(false)}
           >
             <motion.div
               initial={{ scale: 0.9, y: 10 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 10 }}
-              className="bg-chrono-surface-3 border border-red-500/20 rounded-xl p-4 shadow-xl w-full max-w-[280px]"
+              onClick={(e) => e.stopPropagation()}
+              className="bg-[#1a1a1f] border border-red-500/20 rounded-2xl p-6 shadow-2xl w-full max-w-[320px]"
             >
-              <h4 className="text-sm font-semibold text-white mb-1">Delete this task?</h4>
-              <p className="text-xs text-chrono-text-muted line-clamp-2 mb-4">"{task.title}"</p>
+              <h4 className="text-base font-semibold text-white mb-2">Delete this task?</h4>
+              <p className="text-sm text-chrono-text-muted line-clamp-2 mb-6">&quot;{task.title}&quot;</p>
               
-              <div className="flex gap-2 justify-end">
+              <div className="flex gap-3 justify-end">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="px-3 py-1.5 text-xs font-medium rounded-lg text-chrono-text-secondary hover:text-white hover:bg-white/5 transition-colors"
+                  className="px-4 py-2 text-sm font-medium rounded-xl text-chrono-text-secondary hover:text-white hover:bg-white/5 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => onDelete(task.id)}
-                  className="px-3 py-1.5 text-xs font-medium rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors"
+                  className="px-4 py-2 text-sm font-medium rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors"
                 >
                   Delete
                 </button>
