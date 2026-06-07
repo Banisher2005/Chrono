@@ -1,7 +1,4 @@
 <div align="center">
-  
-  <img src="https://raw.githubusercontent.com/Banisher2005/Chrono/main/docs/logo-placeholder.png" alt="Chrono Logo" width="120" height="120" />
-
   # Chrono v1.1
   
   **Your Personal Time Operating System.** <br>
