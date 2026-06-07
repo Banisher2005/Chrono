@@ -67,4 +67,4 @@ src/
 
 ## License
 
-This project is licensed under the MIT License.
+MIT (c) 2026 Banisher2005
