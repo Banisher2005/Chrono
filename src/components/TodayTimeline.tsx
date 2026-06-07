@@ -16,7 +16,7 @@ export default function TodayTimeline() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
 
-  const selectedDateObj = new Date(state.selectedDate + 'T00:00:00');
+  const selectedDateObj = new Date((state.selectedDate || new Date().toISOString().split('T')[0]) + 'T00:00:00');
   const isToday = state.selectedDate === formatDate(new Date());
 
   const dayTasks = useMemo(
@@ -25,7 +25,7 @@ export default function TodayTimeline() {
       .sort((a, b) => {
         if (a.status === 'completed' && b.status !== 'completed') return 1;
         if (a.status !== 'completed' && b.status === 'completed') return -1;
-        return a.order - b.order || a.startTime.localeCompare(b.startTime);
+        return a.order - b.order || (a.startTime || '').localeCompare(b.startTime || '');
       }),
     [state.tasks, state.selectedDate]
   );

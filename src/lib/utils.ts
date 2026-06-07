@@ -56,7 +56,7 @@ export function getWeekDays(tasks: Task[], referenceDate: Date = new Date()): We
       workloadPercent: Math.min(100, Math.round((totalMinutes / maxMinutes) * 100)),
       taskCount: dayTasks.length,
       meetingCount: dayTasks.filter(t => t.category === 'Meeting').length,
-      tasks: dayTasks.sort((a, b) => a.startTime.localeCompare(b.startTime)),
+      tasks: dayTasks.sort((a, b) => (a.startTime || '').localeCompare(b.startTime || '')),
       priorityBreakdown,
     });
   }

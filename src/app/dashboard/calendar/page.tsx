@@ -12,7 +12,7 @@ import TaskCard from '@/components/TaskCard';
 
 export default function CalendarPage() {
   const { state, addTask, updateTask, toggleTask, deleteTask, setSelectedDate } = useStore();
-  const [currentMonth, setCurrentMonth] = useState(new Date(state.selectedDate + 'T00:00:00'));
+  const [currentMonth, setCurrentMonth] = useState(new Date((state.selectedDate || new Date().toISOString().split('T')[0]) + 'T00:00:00'));
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
@@ -29,7 +29,7 @@ export default function CalendarPage() {
   const selectedTasks = useMemo(
     () => state.tasks
       .filter(t => t.date === state.selectedDate)
-      .sort((a, b) => a.startTime.localeCompare(b.startTime)),
+      .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || '')),
     [state.tasks, state.selectedDate]
   );
 
