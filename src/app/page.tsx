@@ -3,7 +3,7 @@
 import React, { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'motion/react';
 import Link from 'next/link';
-import { ArrowRight, Sparkles, Grid3X3, Timer, BarChart3, Calendar, CheckSquare, Layout, Command, Shield } from 'lucide-react';
+import { ArrowRight, Sparkles, Grid3X3, Timer, BarChart3, Calendar, CheckSquare, Layout, Command, Shield, MessageSquare } from 'lucide-react';
 
 const Logo = () => (
   <div className="relative w-8 h-8 flex items-center justify-center flex-shrink-0">
