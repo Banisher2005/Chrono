@@ -218,14 +218,24 @@ export default function TaskCard({ task, index, onToggle, onDelete, onEdit }: Ta
         )}
       </AnimatePresence>
 
-      {/* Completion animation overlay */}
-      {isCompleted && (
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          className="absolute inset-0 bg-green-500/[0.03] origin-left pointer-events-none"
-        />
-      )}
+      {/* Premium Completion Animation */}
+      <AnimatePresence>
+        {isCompleted && (
+          <>
+            <motion.div
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              className="absolute inset-0 bg-green-500/[0.02] origin-left pointer-events-none"
+            />
+            <motion.div
+              initial={{ scale: 0.5, opacity: 1 }}
+              animate={{ scale: 2.5, opacity: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="absolute top-4 left-4 w-6 h-6 rounded-full border-2 border-green-400 pointer-events-none sm:left-12"
+            />
+          </>
+        )}
+      </AnimatePresence>
     </Reorder.Item>
   );
 }

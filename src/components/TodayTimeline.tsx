@@ -14,6 +14,7 @@ export default function TodayTimeline() {
   const { state, addTask, updateTask, deleteTask, toggleTask, setSelectedDate, reorderTasks } = useStore();
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
 
   const selectedDateObj = new Date(state.selectedDate + 'T00:00:00');
   const isToday = state.selectedDate === formatDate(new Date());
@@ -62,8 +63,24 @@ export default function TodayTimeline() {
     setShowModal(true);
   }
 
+  function handleTouchStart(e: React.TouchEvent) {
+    setTouchStart(e.touches[0].clientX);
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    if (!touchStart) return;
+    const touchEnd = e.changedTouches[0].clientX;
+    const distance = touchStart - touchEnd;
+    
+    // Swipe left = Next Day, Swipe right = Prev Day
+    if (distance > 50) handleNextDay();
+    else if (distance < -50) handlePrevDay();
+    
+    setTouchStart(null);
+  }
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       {/* Header */}
       <div className="flex-shrink-0 px-6 pt-6 pb-4">
         <div className="flex items-start justify-between">
@@ -150,23 +167,23 @@ export default function TodayTimeline() {
               <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center mb-5">
                 <CalendarDays size={24} className="text-chrono-text-muted" />
               </div>
-              <p className="text-sm font-medium text-chrono-text mb-1">No missions planned</p>
-              <p className="text-xs text-chrono-text-muted max-w-[200px] mb-6">
-                Your timeline is clear for {isToday ? 'today' : formatDisplayDate(selectedDateObj)}.
+              <p className="text-sm font-medium text-chrono-text mb-1">Your timeline is completely clear.</p>
+              <p className="text-xs text-chrono-text-muted max-w-[240px] mb-6">
+                Take a break, or use Chrono AI to intelligently schedule your next move.
               </p>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center gap-3 w-full">
                 <button
                   onClick={() => { setEditingTask(null); setShowModal(true); }}
-                  className="px-4 py-2 rounded-xl text-xs font-medium bg-white text-black hover:bg-gray-200 transition-colors"
+                  className="px-4 py-2 rounded-xl text-xs font-medium bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-colors"
                 >
-                  Add Task
+                  Manual Entry
                 </button>
                 <button
                   onClick={() => window.location.href = '/dashboard/ai'}
-                  className="px-4 py-2 rounded-xl text-xs font-medium bg-violet-500/20 text-violet-400 border border-violet-500/30 hover:bg-violet-500/30 transition-colors flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-xl text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors flex items-center gap-1.5"
                 >
                   <Sparkles size={14} />
-                  Ask AI
+                  Auto-Plan with AI
                 </button>
               </div>
             </motion.div>

@@ -115,7 +115,13 @@ export default function Sidebar() {
 export function MobileNav() {
   const pathname = usePathname();
 
-  const mobileItems = NAV_ITEMS.slice(0, 5); // Exclude analytics & settings on mobile nav
+  const mobileItems = [
+    NAV_ITEMS[0], // Dashboard (Today)
+    NAV_ITEMS[1], // Calendar
+    NAV_ITEMS[4], // AI
+    NAV_ITEMS[3], // Focus
+    NAV_ITEMS[6], // Settings (Profile)
+  ];
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 glass-strong border-t border-chrono-border/50">
