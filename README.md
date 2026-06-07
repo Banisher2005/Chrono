@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Chronos - Personal Time Operating System
+
+Chronos is a personal time operating system designed to combine task planning, scheduling, calendar management, and productivity tracking into a single, cohesive dashboard. It features a premium, minimalist, dark-mode-first interface inspired by modern design principles.
+
+## Core Features
+
+- **Interactive Dashboard**: A three-panel layout featuring Today's Timeline, Weekly Flow, and Chronos Grid.
+- **Task Management**: Full CRUD operations with priority levels (Critical, High, Medium, Low), task categorization, and source attribution (Chronos, Google Calendar, Microsoft Teams).
+- **Weekly Flow**: A visualized weekly overview displaying workload percentage, task counts, and priority markers.
+- **Chronos Grid**: A contribution-style monthly heatmap tracking daily productivity intensity and focus scores.
+- **AI Scheduler Interface**: An intelligent scheduling assistant capable of breaking down projects and goals into actionable, scheduled subtasks.
+- **Productivity Analytics**: Detailed metrics including daily scores, streak tracking, weekly consistency, and most productive hours.
+- **Local Persistence**: State management leveraging local storage for instant, offline-capable data persistence.
+
+## Technology Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS v4
+- **Animations**: Motion (formerly Framer Motion)
+- **Icons**: Lucide React
+- **Date Handling**: date-fns
+- **State Management**: React Context API
+
+## Prerequisites
+
+- Node.js 18.17 or later
+- npm (or equivalent package manager)
 
 ## Getting Started
 
-First, run the development server:
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Banisher2005/Chronos.git
+   cd Chronos/chrono-app
+   ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Open the application:**
+   Navigate to `http://localhost:3000` in your web browser.
+
+## Project Structure
+
+```text
+src/
+├── app/                  # Next.js app router pages and layouts
+│   ├── ai/               # AI Scheduler page
+│   ├── analytics/        # Productivity analytics page
+│   ├── calendar/         # Monthly calendar view
+│   ├── grid/             # Full-page Chronos Grid heatmap
+│   ├── settings/         # User preferences and data management
+│   ├── globals.css       # Global stylesheet and Tailwind configuration
+│   ├── layout.tsx        # Root layout with sidebar navigation
+│   └── page.tsx          # Main three-panel dashboard
+├── components/           # Reusable UI components
+├── lib/                  # Core utilities, state management, and types
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## License
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is licensed under the MIT License.
