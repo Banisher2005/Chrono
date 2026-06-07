@@ -53,12 +53,47 @@ export default function CommandCenter() {
     .filter((t) => t.status !== 'completed' && t.title.toLowerCase().includes(query.toLowerCase()))
     .slice(0, 5);
 
+  // NLP logic
+  let nlpAction = null;
+  const qLower = query.toLowerCase().trim();
+  if (qLower) {
+    if (qLower.startsWith('go ')) {
+      const target = qLower.replace('go ', '').trim();
+      const match = actions.find(a => a.label.toLowerCase().includes(target));
+      if (match) {
+        nlpAction = { id: 'nlp', label: match.label, icon: <ArrowRight size={16} />, type: 'action', action: match.action };
+      }
+    } else if (qLower.includes('start focus')) {
+      nlpAction = { id: 'nlp', label: 'Start Focus Mode', icon: <Timer size={16} />, type: 'action', action: () => router.push('/dashboard/focus') };
+    } else if (qLower.includes('clear completed')) {
+      nlpAction = { 
+        id: 'nlp', 
+        label: 'Clear completed tasks', 
+        icon: <CheckSquare size={16} />, 
+        type: 'action', 
+        action: () => {
+          // just mock action or trigger if we had a clearCompleted action
+          // We'll leave it as a mock for now
+        }
+      };
+    } else if (filteredActions.length === 0 && filteredTasks.length === 0) {
+      nlpAction = {
+        id: 'nlp',
+        label: `Ask Chrono AI to plan: "${query}"`,
+        icon: <Sparkles size={16} />,
+        type: 'action',
+        action: () => router.push(`/dashboard/ai?q=${encodeURIComponent(query)}`)
+      };
+    }
+  }
+
   const results = [
+    ...(nlpAction ? [{ type: 'header', label: 'Command' }, nlpAction] : []),
     ...(filteredActions.length > 0 ? [{ type: 'header', label: 'Actions' }, ...filteredActions] : []),
     ...(filteredTasks.length > 0 ? [{ type: 'header', label: 'Tasks' }, ...filteredTasks.map(t => ({ id: t.id, label: t.title, icon: <CheckSquare size={16} />, type: 'task', action: () => setIsOpen(false) }))] : []),
   ];
 
-  const selectableResults = results.filter(r => r.type !== 'header');
+  const selectableResults = results.filter((r): r is any => r.type !== 'header');
 
   useEffect(() => {
     setSelectedIndex(0);
@@ -146,11 +181,11 @@ export default function CommandCenter() {
                       className={`
                         flex items-center justify-between px-4 py-3 mx-2 rounded-xl cursor-pointer
                         transition-colors duration-150
-                        ${isSelected ? 'bg-violet-500/15 text-violet-400 border border-violet-500/20' : 'text-chrono-text hover:bg-white/[0.04] border border-transparent'}
+                        ${isSelected ? 'bg-red-500/15 text-red-400 border border-red-500/20' : 'text-chrono-text hover:bg-white/[0.04] border border-transparent'}
                       `}
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`${isSelected ? 'text-violet-400' : 'text-chrono-text-muted'}`}>
+                        <div className={`${isSelected ? 'text-red-400' : 'text-chrono-text-muted'}`}>
                           {'icon' in item ? item.icon : null}
                         </div>
                         <span className="text-sm font-medium">{item.label}</span>

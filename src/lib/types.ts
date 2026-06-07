@@ -80,6 +80,8 @@ export interface AIMessage {
   role: 'user' | 'ai';
   content: string;
   tasks?: GeneratedTask[];
+  deletedTaskIds?: string[];
+  updatedTasks?: Partial<Task>[];
   applied?: boolean;
 }
 

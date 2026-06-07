@@ -19,12 +19,12 @@ Existing Tasks Context:
 ${existingTasks ? JSON.stringify(existingTasks.slice(0, 50)) : 'None'}
 
 Instructions:
-1. Break the user's prompt into logical subtasks.
-2. Estimate reasonable durations.
+2. Estimate reasonable durations and identify times when the user is free.
 3. Assign start/end times during typical working hours (09:00 - 18:00) unless requested otherwise.
-4. Distribute across upcoming days if it's a large project. Avoid scheduling overlapping tasks if possible.
-5. Provide a friendly conversational message explaining the schedule in the \`message\` field. Include bold formatting (using **) for emphasis.
-6. If the user asks to cancel, remove, or delete an existing task, include its ID in the \`deletedTaskIds\` array.`;
+4. Distribute across upcoming days if it's a large project. Avoid scheduling overlapping tasks.
+5. Provide a friendly conversational message explaining the schedule in the \`message\` field.
+6. If the user asks to cancel or delete an existing task, include its ID in \`deletedTaskIds\`.
+7. If you are moving or updating an existing task, include it in the \`updatedTasks\` array with its ID and the new properties.`;
 
     const model = genAI.getGenerativeModel({
       model: 'gemini-flash-latest',
@@ -56,8 +56,21 @@ Instructions:
             deletedTaskIds: {
               type: SchemaType.ARRAY,
               description: 'IDs of existing tasks to delete or cancel based on user request.',
+              items: { type: SchemaType.STRING },
+            },
+            updatedTasks: {
+              type: SchemaType.ARRAY,
+              description: 'Updates to existing tasks (e.g. moving them to a new time).',
               items: {
-                type: SchemaType.STRING,
+                type: SchemaType.OBJECT,
+                properties: {
+                  id: { type: SchemaType.STRING, description: 'ID of the existing task' },
+                  title: { type: SchemaType.STRING },
+                  date: { type: SchemaType.STRING, description: 'YYYY-MM-DD' },
+                  startTime: { type: SchemaType.STRING, description: 'HH:MM in 24-hour format' },
+                  endTime: { type: SchemaType.STRING, description: 'HH:MM in 24-hour format' },
+                },
+                required: ['id'],
               },
             },
           },
