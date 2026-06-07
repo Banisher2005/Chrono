@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { motion } from 'motion/react';
+import { motion, Reorder } from 'motion/react';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { addMonths, subMonths, format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay } from 'date-fns';
 import { useStore } from '@/lib/store';
@@ -11,7 +11,7 @@ import AddTaskModal from '@/components/AddTaskModal';
 import TaskCard from '@/components/TaskCard';
 
 export default function CalendarPage() {
-  const { state, addTask, updateTask, toggleTask, deleteTask, setSelectedDate } = useStore();
+  const { state, addTask, updateTask, toggleTask, deleteTask, setSelectedDate, reorderTasks } = useStore();
   const selectedDateObj = useMemo(() => {
     try {
       const d = new Date((state.selectedDate || new Date().toISOString().split('T')[0]) + 'T00:00:00');
@@ -173,16 +173,25 @@ export default function CalendarPage() {
               <p className="text-xs text-chrono-text-muted mt-1">Click + to add one</p>
             </div>
           ) : (
-            selectedTasks.map((task, i) => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                index={i}
-                onToggle={toggleTask}
-                onDelete={deleteTask}
-                onEdit={(t) => { setEditingTask(t); setShowModal(true); }}
-              />
-            ))
+            <Reorder.Group
+              axis="y"
+              values={selectedTasks}
+              onReorder={(newOrder) => {
+                reorderTasks(state.selectedDate, newOrder.map(t => t.id));
+              }}
+              className="space-y-2"
+            >
+              {selectedTasks.map((task, i) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  index={i}
+                  onToggle={toggleTask}
+                  onDelete={deleteTask}
+                  onEdit={(t) => { setEditingTask(t); setShowModal(true); }}
+                />
+              ))}
+            </Reorder.Group>
           )}
         </div>
       </div>
