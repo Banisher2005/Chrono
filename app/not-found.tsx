@@ -8,11 +8,9 @@ export default function NotFound() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-500/5 blur-[100px] rounded-full pointer-events-none" />
 
       <div className="text-center relative z-10 max-w-lg">
-        {/* Animated orbital rings */}
-        <div className="relative w-32 h-32 mx-auto mb-12 flex items-center justify-center">
-          <div className="absolute inset-0 border border-white/10 rounded-full animate-[spin_10s_linear_infinite]" />
-          <div className="absolute inset-4 border border-red-500/30 rounded-full animate-[spin_5s_linear_infinite_reverse]" />
-          <div className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_15px_#ef4444]" />
+        {/* Unified Chrono Logo Mark */}
+        <div className="mb-12 w-[120px] h-[120px] mx-auto flex items-center justify-center">
+          <img src="/branding/chrono-mark.svg" alt="Chrono" className="w-[120px] h-[120px]" />
         </div>
 
         <h1 className="text-6xl font-bold mb-4 font-mono">404</h1>

@@ -30,7 +30,13 @@ export default function DashboardLayout({
     setChecking(false);
   }, [pathname, router]);
 
-  if (checking) return <div className="h-screen w-screen bg-chrono-bg" />;
+  if (checking) {
+    return (
+      <div className="h-screen w-screen bg-chrono-bg flex items-center justify-center">
+        <img src="/branding/chrono-mark.svg" alt="Loading..." className="w-[72px] h-[72px]" />
+      </div>
+    );
+  }
 
   return (
     <StoreProvider>

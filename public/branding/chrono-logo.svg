@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 60" width="100%" height="100%">
+  <!-- Orbit Mark -->
+  <circle cx="30" cy="30" r="22" stroke="#ffffff" stroke-width="1.5" fill="none" />
+  <circle cx="52" cy="30" r="3.5" fill="#ef4444">
+    <animateTransform 
+      attributeName="transform" 
+      type="rotate" 
+      from="0 30 30" 
+      to="360 30 30" 
+      dur="8s" 
+      repeatCount="indefinite" 
+    />
+  </circle>
+  <!-- Text -->
+  <text x="70" y="39" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#ffffff" letter-spacing="-0.5">Chrono</text>
+</svg>

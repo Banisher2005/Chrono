@@ -346,7 +346,11 @@ function FocusContent() {
 
 export default function FocusPage() {
   return (
-    <Suspense fallback={<div className="h-full flex items-center justify-center text-chrono-text-muted">Loading...</div>}>
+    <Suspense fallback={
+      <div className="h-full w-full flex items-center justify-center bg-chrono-bg">
+        <img src="/branding/chrono-mark.svg" alt="Loading..." className="w-[72px] h-[72px]" />
+      </div>
+    }>
       <FocusContent />
     </Suspense>
   );

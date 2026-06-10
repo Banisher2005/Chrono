@@ -5,21 +5,14 @@ import { motion, useScroll, useTransform } from 'motion/react';
 import Link from 'next/link';
 import { ArrowRight, Sparkles, Grid3X3, Timer, BarChart3, Calendar, CheckSquare, Layout, Command, Shield, MessageSquare } from 'lucide-react';
 
-const Logo = () => (
-  <div className="relative w-8 h-8 flex items-center justify-center flex-shrink-0">
-    <div className="w-6 h-6 rounded-full border-[1.5px] border-white/[0.8]" />
-    <div className="absolute w-1.5 h-1.5 rounded-full bg-red-500 animate-orbit" />
-    <div className="absolute w-1 h-1 rounded-full bg-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-  </div>
-);
-
 function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-2xl bg-black/50 border-b border-white/[0.05]">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Logo />
-          <span className="text-lg font-semibold tracking-tight text-white">Chrono</span>
+        <div className="flex items-center">
+          <Link href="/" className="flex items-center">
+            <img src="/branding/chrono-logo.svg" alt="Chrono" className="h-8 object-contain" />
+          </Link>
         </div>
         <div className="flex items-center gap-4">
           <Link
@@ -45,8 +38,13 @@ function HeroSection() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-        className="max-w-4xl mx-auto text-center relative z-10"
+        className="max-w-4xl mx-auto text-center relative z-10 flex flex-col items-center"
       >
+        {/* Hero Logo */}
+        <div className="mb-10 w-[120px] h-[120px] flex items-center justify-center">
+          <img src="/branding/chrono-mark.svg" alt="Chrono" className="w-[120px] h-[120px]" />
+        </div>
+
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.05] text-xs text-white/60 mb-8 backdrop-blur-md">
           <Sparkles size={12} className="text-red-400" />
           <span>Chrono v1.1 is now live</span>
@@ -348,7 +346,7 @@ export default function LandingPage() {
       <footer className="border-t border-white/5 py-12 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Logo />
+            <img src="/branding/chrono-mark.svg" alt="Chrono" className="w-8 h-8" />
             <span className="text-white/50 font-medium">Chrono v1.1</span>
           </div>
           <p className="text-white/30 text-sm">Personal Time Operating System.</p>

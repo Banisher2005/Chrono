@@ -42,12 +42,10 @@ export default function LoginPage() {
         className="w-full max-w-sm"
       >
         {/* Logo */}
-        <div className="text-center mb-10">
-          <div className="relative w-8 h-8 mx-auto mb-8 flex items-center justify-center scale-[2]">
-            <div className="w-6 h-6 rounded-full border-2 border-chrono-text/80" />
-            <div className="absolute w-2 h-2 rounded-full bg-priority-critical animate-orbit" />
+        <div className="text-center mb-10 flex flex-col items-center">
+          <div className="mb-6 h-12 flex items-center justify-center">
+            <img src="/branding/chrono-logo.svg" alt="Chrono" className="h-12 object-contain" />
           </div>
-          <h1 className="text-3xl font-bold gradient-text mb-2">Chrono</h1>
           <p className="text-sm text-chrono-text-muted">Your personal time operating system</p>
         </div>
 

@@ -7,9 +7,9 @@ export const metadata: Metadata = {
   description: "Your personal time operating system. Plan, track, and optimize your productivity with Chrono.",
   manifest: "/manifest.json",
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    icon: "/branding/favicon.ico",
+    shortcut: "/branding/favicon.ico",
+    apple: "/branding/apple-touch-icon.png",
   },
 };
 

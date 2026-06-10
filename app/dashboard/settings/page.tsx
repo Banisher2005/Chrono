@@ -217,7 +217,11 @@ function SettingsContent() {
 
 export default function SettingsPage() {
   return (
-    <Suspense fallback={<div className="p-6 text-chrono-text-muted text-sm">Loading settings...</div>}>
+    <Suspense fallback={
+      <div className="h-full w-full flex items-center justify-center bg-chrono-bg">
+        <img src="/branding/chrono-mark.svg" alt="Loading..." className="w-[72px] h-[72px]" />
+      </div>
+    }>
       <SettingsContent />
     </Suspense>
   );

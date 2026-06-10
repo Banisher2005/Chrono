@@ -37,23 +37,14 @@ export default function Sidebar() {
       className="hidden md:flex flex-col h-full glass-strong z-30 relative flex-shrink-0"
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 h-16 border-b border-chrono-border/50">
-        <div className="relative w-8 h-8 flex items-center justify-center flex-shrink-0">
-          <div className="w-6 h-6 rounded-full border-2 border-chrono-text/80" />
-          <div className="absolute w-2 h-2 rounded-full bg-priority-critical animate-orbit" />
-        </div>
-        <AnimatePresence>
-          {!collapsed && (
-            <motion.span
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              className="text-lg font-bold tracking-tight gradient-text"
-            >
-              Chrono
-            </motion.span>
+      <div className="flex items-center px-4 h-16 border-b border-chrono-border/50">
+        <Link href="/dashboard" className="flex items-center">
+          {collapsed ? (
+            <img src="/branding/chrono-mark.svg" alt="Chrono" className="w-10 h-10" />
+          ) : (
+            <img src="/branding/chrono-logo.svg" alt="Chrono" className="h-10 object-contain" />
           )}
-        </AnimatePresence>
+        </Link>
       </div>
 
       {/* Navigation */}

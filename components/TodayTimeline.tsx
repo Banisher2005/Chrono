@@ -173,7 +173,7 @@ export default function TodayTimeline() {
               className="flex flex-col items-center justify-center py-12 text-center"
             >
               <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center mb-5">
-                <CalendarDays size={24} className="text-chrono-text-muted" />
+                <img src="/branding/chrono-mark.svg" alt="Chrono" className="w-8 h-8" />
               </div>
               <p className="text-sm font-medium text-chrono-text mb-1">Your timeline is completely clear.</p>
               <p className="text-xs text-chrono-text-muted max-w-[240px] mb-6">

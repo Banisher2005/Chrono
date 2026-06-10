@@ -64,8 +64,8 @@ export default function OnboardingPage() {
             exit={{ opacity: 0, y: -20 }}
             className="max-w-md w-full text-center"
           >
-            <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-8">
-              <Sparkles className="text-red-400" size={32} />
+            <div className="mb-8 w-[72px] h-[72px] mx-auto flex items-center justify-center">
+              <img src="/branding/chrono-mark.svg" alt="Chrono" className="w-[72px] h-[72px]" />
             </div>
             <h1 className="text-4xl font-bold mb-4">Welcome to Chrono</h1>
             <p className="text-chrono-text-muted text-lg mb-12">Let's build your time system.</p>
