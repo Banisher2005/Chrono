@@ -1,8 +1,11 @@
 <div align="center">
+  
   # Chrono v1.1
   
-  **Your Personal Time Operating System.** <br>
-  An intelligent, AI-powered productivity platform designed to replace fragmented calendars, task lists, and focus timers with a single, visually stunning interface.
+  **AI-powered personal time operating system.** <br>
+  An intelligent, premium productivity platform designed to replace fragmented calendars, task lists, and focus timers with a single, visually stunning interface.
+  
+  Installable on all devices as a Progressive Web App (PWA).
 
   [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
@@ -22,6 +25,7 @@
 - **Universal Command Center (`Ctrl+K`):** Navigate the entire application, trigger focus modes, or type natural language (e.g., *"study physics tomorrow at 5pm"*) to instantly create tasks.
 - **Chrono Grid (Heatmap):** A GitHub-style contribution graph for your personal productivity. Visualize streaks, track your deepest focus days, and monitor long-term momentum.
 - **Deep Focus Mode:** Select a task and enter a distraction-free Pomodoro session. Chrono tracks your actual time spent versus estimated time, logging it automatically upon completion.
+- **Progressive Web App (PWA):** Install Chrono directly onto your mobile or desktop home screen. Runs in standalone full-screen mode with offline fallback caching, touch gestures, and smooth animations.
 - **Chrono Wrapped:** A beautiful, shareable Spotify-style summary of your annual or monthly productivity stats, complete with customizable themes (Glass, Cyberpunk, Spotify Gradient).
 - **Public Profiles:** Share your work ethic with the world. Generate a `/u/username` link showing off your Chrono Grid and streaks while keeping your task details strictly private.
 
@@ -48,7 +52,7 @@
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/Banisher2005/Chrono.git
-   cd Chrono/chrono-app
+   cd Chrono
    ```
 
 2. **Install dependencies:**
@@ -69,6 +73,10 @@
    npm run dev
    ```
    Open [http://localhost:3000](http://localhost:3000) to view the application.
+
+5. **PWA Installation:**
+   - On **Mobile (Chrome/Safari):** Open the website, tap "Share" or the menu button, and select "Add to Home Screen".
+   - On **Desktop (Chrome/Edge):** Open the website, click the install icon in the URL bar, and select "Install".
 
 ## 🧠 System Architecture
 

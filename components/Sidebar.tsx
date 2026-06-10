@@ -116,11 +116,11 @@ export function MobileNav() {
   const pathname = usePathname();
 
   const mobileItems = [
-    NAV_ITEMS[0], // Dashboard (Today)
-    NAV_ITEMS[1], // Calendar
-    NAV_ITEMS[4], // AI
-    NAV_ITEMS[3], // Focus
-    NAV_ITEMS[6], // Settings (Profile)
+    { ...NAV_ITEMS[0], label: 'Today' },
+    { ...NAV_ITEMS[1], label: 'Calendar' },
+    { ...NAV_ITEMS[4], label: 'AI' },
+    { ...NAV_ITEMS[3], label: 'Focus' },
+    { ...NAV_ITEMS[6], label: 'Profile' },
   ];
 
   return (
